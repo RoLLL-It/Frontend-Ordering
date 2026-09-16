@@ -206,7 +206,7 @@ export default function AdminDashboardPage() {
                   </div>
 
                   <p className="text-xs text-ink-muted">
-                    {order.items.map((i) => `${i.quantity}× ${i.name}`).join(', ')} ·{' '}
+                    {(order.items || []).map((i) => `${i.quantity}× ${i.name_snapshot}`).join(', ')} ·{' '}
                     <span className="font-bold text-ink">{order.location.code}</span>
                   </p>
 
@@ -254,7 +254,7 @@ export default function AdminDashboardPage() {
                   </div>
 
                   <p className="text-xs text-ink-muted">
-                    {order.items.map((i) => `${i.quantity}× ${i.name}`).join(', ')} ·{' '}
+                    {(order.items || []).map((i) => `${i.quantity}× ${i.name_snapshot}`).join(', ')} ·{' '}
                     <span className="font-bold text-ink">{order.location.code}</span>
                   </p>
 
@@ -302,7 +302,7 @@ export default function AdminDashboardPage() {
                   </div>
 
                   <p className="text-xs text-ink-muted">
-                    {order.items.map((i) => `${i.quantity}× ${i.name}`).join(', ')} ·{' '}
+                    {(order.items || []).map((i) => `${i.quantity}× ${i.name_snapshot}`).join(', ')} ·{' '}
                     <span className="font-bold text-ink">{order.location.code}</span>
                   </p>
 
@@ -350,7 +350,7 @@ export default function AdminDashboardPage() {
                   </div>
 
                   <p className="text-xs text-ink-muted">
-                    {order.items.map((i) => `${i.quantity}× ${i.name}`).join(', ')} ·{' '}
+                    {(order.items || []).map((i) => `${i.quantity}× ${i.name_snapshot}`).join(', ')} ·{' '}
                     <span className="font-bold text-ink">{order.location.code}</span>
                   </p>
 

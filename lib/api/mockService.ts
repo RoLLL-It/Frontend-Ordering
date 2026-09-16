@@ -167,7 +167,7 @@ export const mockService = {
       subtotal += line;
       return {
         id: `oi-${Date.now()}-${Math.random()}`,
-        name: mi ? mi.name : 'Unknown Item',
+        name_snapshot: mi ? mi.name : 'Unknown Item',
         quantity: i.quantity,
         price_snapshot_paise: price,
         line_total_paise: line,
@@ -323,7 +323,7 @@ export const mockService = {
       rating: data.rating,
       comment: data.comment || '',
       reviewer_name: user?.name ? `${user.name.split(' ')[0]} ${user.name.split(' ')[1]?.[0] || ''}.` : 'Heet C.',
-      items: order ? order.items.map((i) => i.name) : ['Roll-IT Special'],
+      items: order ? order.items.map((i) => i.name_snapshot) : ['Roll-IT Special'],
       created_at: new Date().toISOString(),
       editable_until: new Date(Date.now() + 1000 * 60 * 60 * 24).toISOString(),
     };

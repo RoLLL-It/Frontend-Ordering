@@ -89,14 +89,14 @@ export default function GiveReviewPage() {
         <div className="flex items-center justify-between text-xs font-mono font-bold text-ink-muted mb-1">
           <span>{order.short_code}</span>
           <span className="font-sans font-semibold text-ink">
-            {order.items.reduce((sum, i) => sum + i.quantity, 0)} items ·{' '}
+            {(order.items || []).reduce((sum, i) => sum + i.quantity, 0)} items ·{' '}
             <span className="tabular-nums font-bold">
               {formatRupees(order.total_paise)}
             </span>
           </span>
         </div>
         <p className="text-sm font-medium text-ink truncate">
-          {order.items.map((i) => i.name).join(', ')}
+          {(order.items || []).map((i) => i.name_snapshot).join(', ')}
         </p>
       </div>
 

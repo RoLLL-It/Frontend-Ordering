@@ -210,7 +210,7 @@ function OrderStatusContent() {
               className="flex items-center justify-between text-sm text-ink"
             >
               <span>
-                {item.quantity}× {item.name}
+                {item.quantity}× {item.name_snapshot}
               </span>
               <span className="font-semibold tabular-nums">
                 {formatRupees(item.line_total_paise)}

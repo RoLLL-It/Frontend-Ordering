@@ -149,7 +149,7 @@ export default function AdminOrdersPage() {
                     {order.items.map((i, idx) => (
                       <div key={idx} className="flex justify-between text-ink">
                         <span>
-                          {i.quantity}× {i.name}
+                          {i.quantity}× {i.name_snapshot}
                         </span>
                         <span className="font-semibold tabular-nums">
                           {formatRupees(i.line_total_paise)}

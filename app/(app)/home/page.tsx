@@ -91,7 +91,7 @@ export default function HomePage() {
 
           <div className="flex items-center justify-between pt-2 border-t border-primary-800 text-sm mt-2">
             <span className="text-primary-200">
-              {latestActiveOrder.items.reduce((acc, i) => acc + i.quantity, 0)}{' '}
+              {(latestActiveOrder.items || []).reduce((acc, i) => acc + i.quantity, 0)}{' '}
               items ·{' '}
               <span className="font-bold text-white tabular-nums">
                 {formatRupees(latestActiveOrder.total_paise)}

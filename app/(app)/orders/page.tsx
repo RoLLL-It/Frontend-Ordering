@@ -105,7 +105,7 @@ export default function OrdersListPage() {
             </div>
 
             <p className="text-sm font-semibold text-ink line-clamp-1">
-              {order.items.map((i) => `${i.quantity}× ${i.name}`).join(', ')}
+              {(order.items || []).map((i) => `${i.quantity}× ${i.name_snapshot}`).join(', ')}
             </p>
 
             <div className="flex items-center justify-between text-xs text-ink-muted mt-2 pt-2 border-t border-line/50">

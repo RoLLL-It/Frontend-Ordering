@@ -276,14 +276,14 @@ export class MockDatabase {
       items: [
         {
           id: 'oi-1',
-          name: 'Paneer Tikka Roll',
+          name_snapshot: 'Paneer Tikka Roll',
           quantity: 2,
           price_snapshot_paise: 12000,
           line_total_paise: 24000,
         },
         {
           id: 'oi-2',
-          name: 'Masala Coke',
+          name_snapshot: 'Masala Coke',
           quantity: 1,
           price_snapshot_paise: 4000,
           line_total_paise: 4000,
@@ -324,7 +324,7 @@ export class MockDatabase {
       status: 'PLACED',
       items: [
         {
-          name: 'Paneer Tikka Roll',
+          name_snapshot: 'Paneer Tikka Roll',
           quantity: 2,
           price_snapshot_paise: 12000,
           line_total_paise: 24000,
@@ -352,7 +352,7 @@ export class MockDatabase {
       status: 'PLACED',
       items: [
         {
-          name: 'Chicken Seekh Roll',
+          name_snapshot: 'Chicken Seekh Roll',
           quantity: 1,
           price_snapshot_paise: 15000,
           line_total_paise: 15000,
@@ -380,7 +380,7 @@ export class MockDatabase {
       status: 'ACCEPTED',
       items: [
         {
-          name: 'Veg Schezwan Roll',
+          name_snapshot: 'Veg Schezwan Roll',
           quantity: 3,
           price_snapshot_paise: 10000,
           line_total_paise: 30000,
@@ -411,7 +411,7 @@ export class MockDatabase {
       status: 'PREPARING',
       items: [
         {
-          name: 'Aloo Masala Roll',
+          name_snapshot: 'Aloo Masala Roll',
           quantity: 1,
           price_snapshot_paise: 9000,
           line_total_paise: 9000,
@@ -443,7 +443,7 @@ export class MockDatabase {
       status: 'OUT_FOR_DELIVERY',
       items: [
         {
-          name: 'Chicken Seekh Roll',
+          name_snapshot: 'Chicken Seekh Roll',
           quantity: 2,
           price_snapshot_paise: 15000,
           line_total_paise: 30000,
@@ -477,7 +477,7 @@ export class MockDatabase {
       status: 'DELIVERED',
       items: [
         {
-          name: 'Paneer Tikka Roll',
+          name_snapshot: 'Paneer Tikka Roll',
           quantity: 1,
           price_snapshot_paise: 12000,
           line_total_paise: 12000,

@@ -107,7 +107,9 @@ export interface CartValidateResponse {
 
 export interface OrderItemSnapshot {
   id?: string;
-  name: string;
+  order_id?: string;
+  menu_item_id?: string;
+  name_snapshot: string;
   quantity: number;
   price_snapshot_paise: number;
   line_total_paise: number;
