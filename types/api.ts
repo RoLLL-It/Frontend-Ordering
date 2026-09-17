@@ -30,7 +30,7 @@ export interface MenuItem {
   name: string;
   description: string;
   price_paise: number;
-  image_url?: string;
+  image_url?: string | null;
   is_veg: boolean;
   is_available: boolean;
   is_active: boolean;

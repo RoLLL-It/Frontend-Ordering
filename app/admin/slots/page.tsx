@@ -10,8 +10,12 @@ import { Modal } from '@/components/ui/Modal';
 import { Input } from '@/components/ui/Input';
 import { Button } from '@/components/ui/Button';
 import { useToast } from '@/components/providers/ToastProvider';
-import { Calendar, Clock, Edit2 } from 'lucide-react';
+import { Calendar, Clock, Edit2, Plus } from 'lucide-react';
 import { DeliverySlot } from '@/types/api';
+
+function todayISO(): string {
+  return new Date().toISOString().slice(0, 10);
+}
 
 export default function AdminSlotsPage() {
   const queryClient = useQueryClient();
@@ -19,6 +23,14 @@ export default function AdminSlotsPage() {
 
   const [editSlot, setEditSlot] = useState<DeliverySlot | null>(null);
   const [newCapacity, setNewCapacity] = useState<string>('20');
+  const [selectedDate, setSelectedDate] = useState<string>(todayISO());
+
+  const [addSlotOpen, setAddSlotOpen] = useState(false);
+  const [newSlotLocation, setNewSlotLocation] = useState('');
+  const [newSlotStart, setNewSlotStart] = useState('12:30');
+  const [newSlotEnd, setNewSlotEnd] = useState('13:00');
+  const [newSlotCapacity, setNewSlotCapacity] = useState('20');
+  const [newSlotCutoff, setNewSlotCutoff] = useState('15');
 
   const { data: locations = [] } = useQuery({
     queryKey: ['locations'],
@@ -26,8 +38,31 @@ export default function AdminSlotsPage() {
   });
 
   const { data: slots = [], isLoading } = useQuery({
-    queryKey: ['admin', 'slots'],
-    queryFn: () => adminApi.getSlots(),
+    queryKey: ['admin', 'slots', selectedDate],
+    queryFn: () => adminApi.getSlots(selectedDate),
+  });
+
+  const createSlotMutation = useMutation({
+    mutationFn: () =>
+      adminApi.createSlot({
+        location_id: newSlotLocation || locations[0]?.id,
+        slot_date: selectedDate,
+        start_time: newSlotStart,
+        end_time: newSlotEnd,
+        capacity: parseInt(newSlotCapacity, 10),
+        cutoff_minutes: parseInt(newSlotCutoff, 10),
+      }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['admin', 'slots'] });
+      toastSuccess('Slot created');
+      setAddSlotOpen(false);
+      setNewSlotStart('12:30');
+      setNewSlotEnd('13:00');
+      setNewSlotCapacity('20');
+    },
+    onError: (err: any) => {
+      toastError(err.message || 'Could not create slot');
+    },
   });
 
   const capacityMutation = useMutation({
@@ -67,9 +102,27 @@ export default function AdminSlotsPage() {
           </p>
         </div>
 
-        <div className="flex items-center gap-2 bg-surface p-2.5 rounded-card border border-line text-xs font-semibold text-ink">
-          <Calendar className="w-4 h-4 text-primary-500" />
-          <span>Today · {new Date().toLocaleDateString('en-IN', { weekday: 'long', day: 'numeric', month: 'short' })}</span>
+        <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 bg-surface p-2.5 rounded-card border border-line text-xs font-semibold text-ink">
+            <Calendar className="w-4 h-4 text-primary-500" />
+            <input
+              type="date"
+              value={selectedDate}
+              onChange={(e) => setSelectedDate(e.target.value)}
+              className="bg-transparent focus:outline-none"
+            />
+          </div>
+          <Button
+            size="md"
+            onClick={() => {
+              setNewSlotLocation(locations[0]?.id || '');
+              setAddSlotOpen(true);
+            }}
+            className="inline-flex items-center gap-1.5 shadow-sm"
+          >
+            <Plus className="w-4 h-4" />
+            <span>Add slot</span>
+          </Button>
         </div>
       </div>
 
@@ -108,6 +161,21 @@ export default function AdminSlotsPage() {
                   />
                 </div>
 
+                {locSlots.length === 0 && (
+                  <p className="text-sm text-ink-muted py-3">
+                    No slots for this date yet.{' '}
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setNewSlotLocation(loc.id);
+                        setAddSlotOpen(true);
+                      }}
+                      className="text-primary-600 font-semibold hover:underline"
+                    >
+                      Add one
+                    </button>
+                  </p>
+                )}
                 <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3 pt-1">
                   {locSlots.map((slot) => {
                     const isFull = slot.booked_count >= slot.capacity;
@@ -197,6 +265,88 @@ export default function AdminSlotsPage() {
               onClick={handleSaveCapacity}
             >
               Save Capacity
+            </Button>
+          </div>
+        </div>
+      </Modal>
+
+      {/* Add Slot Modal */}
+      <Modal
+        isOpen={addSlotOpen}
+        onClose={() => setAddSlotOpen(false)}
+        title="Add Delivery Slot"
+        description={`New pickup window for ${selectedDate}.`}
+      >
+        <div className="space-y-4 mt-2">
+          <div>
+            <label className="text-xs font-semibold text-ink-muted uppercase tracking-wider mb-1 block">
+              Location
+            </label>
+            <select
+              value={newSlotLocation}
+              onChange={(e) => setNewSlotLocation(e.target.value)}
+              className="w-full h-11 px-3 bg-surface border border-line rounded-sm text-sm text-ink focus:outline-none focus:ring-2 focus:ring-primary-500"
+            >
+              {locations.map((loc) => (
+                <option key={loc.id} value={loc.id}>
+                  {loc.name} ({loc.code})
+                </option>
+              ))}
+            </select>
+          </div>
+
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <label className="text-xs font-semibold text-ink-muted uppercase tracking-wider mb-1 block">
+                Start Time
+              </label>
+              <input
+                type="time"
+                value={newSlotStart}
+                onChange={(e) => setNewSlotStart(e.target.value)}
+                className="w-full h-11 px-3 bg-surface border border-line rounded-sm text-sm text-ink focus:outline-none focus:ring-2 focus:ring-primary-500"
+              />
+            </div>
+            <div>
+              <label className="text-xs font-semibold text-ink-muted uppercase tracking-wider mb-1 block">
+                End Time
+              </label>
+              <input
+                type="time"
+                value={newSlotEnd}
+                onChange={(e) => setNewSlotEnd(e.target.value)}
+                className="w-full h-11 px-3 bg-surface border border-line rounded-sm text-sm text-ink focus:outline-none focus:ring-2 focus:ring-primary-500"
+              />
+            </div>
+          </div>
+
+          <div className="grid grid-cols-2 gap-3">
+            <Input
+              label="Capacity (Max Orders)"
+              type="number"
+              min="1"
+              value={newSlotCapacity}
+              onChange={(e) => setNewSlotCapacity(e.target.value)}
+            />
+            <Input
+              label="Cutoff (Minutes Before)"
+              type="number"
+              min="0"
+              value={newSlotCutoff}
+              onChange={(e) => setNewSlotCutoff(e.target.value)}
+            />
+          </div>
+
+          <div className="flex items-center justify-end gap-3 pt-3 border-t border-line">
+            <Button variant="secondary" onClick={() => setAddSlotOpen(false)}>
+              Cancel
+            </Button>
+            <Button
+              disabled={!newSlotLocation || newSlotEnd <= newSlotStart}
+              isLoading={createSlotMutation.isPending}
+              onClick={() => createSlotMutation.mutate()}
+            >
+              Create Slot
             </Button>
           </div>
         </div>

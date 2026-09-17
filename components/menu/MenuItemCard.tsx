@@ -100,7 +100,7 @@ export function MenuItemCard({ item }: MenuItemCardProps) {
                   name: item.name,
                   pricePaise: item.price_paise,
                   isVeg: item.is_veg,
-                  imageUrl: item.image_url,
+                  imageUrl: item.image_url ?? undefined,
                 })
               }
               className="px-4 py-1.5 bg-surface border border-line-strong hover:border-primary-500 hover:text-primary-600 text-ink font-semibold text-sm rounded-pill transition-all active:scale-95 shadow-sm"

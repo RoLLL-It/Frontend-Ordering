@@ -13,6 +13,7 @@ import { Toggle } from '@/components/ui/Toggle';
 import { Modal } from '@/components/ui/Modal';
 import { Input } from '@/components/ui/Input';
 import { Button } from '@/components/ui/Button';
+import { ImageUploadField } from '@/components/ui/ImageUploadField';
 import { useToast } from '@/components/providers/ToastProvider';
 import { Plus, Info, Star } from 'lucide-react';
 
@@ -27,6 +28,14 @@ export default function AdminMenuPage() {
   const [newItemPrice, setNewItemPrice] = useState('140');
   const [newItemCategory, setNewItemCategory] = useState('cat-1');
   const [newItemIsVeg, setNewItemIsVeg] = useState(true);
+  const [newItemImageUrl, setNewItemImageUrl] = useState<string | null>(null);
+
+  const [editingItem, setEditingItem] = useState<MenuItem | null>(null);
+  const [editName, setEditName] = useState('');
+  const [editDesc, setEditDesc] = useState('');
+  const [editPrice, setEditPrice] = useState('');
+  const [editIsVeg, setEditIsVeg] = useState(true);
+  const [editImageUrl, setEditImageUrl] = useState<string | null>(null);
 
   const { data: menuData, isLoading } = useQuery({
     queryKey: ['menu'],
@@ -80,6 +89,7 @@ export default function AdminMenuPage() {
         name: newItemName,
         description: newItemDesc,
         price_paise: parseInt(newItemPrice, 10) * 100,
+        image_url: newItemImageUrl,
         is_veg: newItemIsVeg,
       }),
     onSuccess: () => {
@@ -89,9 +99,53 @@ export default function AdminMenuPage() {
       setNewItemName('');
       setNewItemDesc('');
       setNewItemPrice('140');
+      setNewItemImageUrl(null);
     },
     onError: (err: any) => {
       toastError(err.message || 'Failed to create item');
+    },
+  });
+
+  const openEditModal = (item: MenuItem) => {
+    setEditingItem(item);
+    setEditName(item.name);
+    setEditDesc(item.description);
+    setEditPrice(String(item.price_paise / 100));
+    setEditIsVeg(item.is_veg);
+    setEditImageUrl(item.image_url || null);
+  };
+
+  // Edit item mutation
+  const editMutation = useMutation({
+    mutationFn: () => {
+      if (!editingItem) throw new Error('No item selected');
+      return adminApi.updateItem(editingItem.id, {
+        name: editName,
+        description: editDesc,
+        price_paise: parseInt(editPrice, 10) * 100,
+        image_url: editImageUrl,
+        is_veg: editIsVeg,
+      });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['menu'] });
+      toastSuccess('Item updated');
+      setEditingItem(null);
+    },
+    onError: (err: any) => {
+      toastError(err.message || 'Failed to update item');
+    },
+  });
+
+  // Delete item mutation
+  const deleteMutation = useMutation({
+    mutationFn: (id: string) => adminApi.softDeleteItem(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['menu'] });
+      toastSuccess('Item removed from menu');
+    },
+    onError: (err: any) => {
+      toastError(err.message || 'Failed to remove item');
     },
   });
 
@@ -233,6 +287,7 @@ export default function AdminMenuPage() {
                             <button
                               type="button"
                               disabled={!isAdmin}
+                              onClick={() => openEditModal(item)}
                               className={`font-semibold transition-colors ${
                                 isAdmin
                                   ? 'text-primary-600 hover:text-primary-700'
@@ -249,6 +304,11 @@ export default function AdminMenuPage() {
                             <button
                               type="button"
                               disabled={!isAdmin}
+                              onClick={() => {
+                                if (confirm(`Remove "${item.name}" from the menu?`)) {
+                                  deleteMutation.mutate(item.id);
+                                }
+                              }}
                               className={`font-semibold transition-colors ${
                                 isAdmin
                                   ? 'text-error hover:text-red-700'
@@ -327,6 +387,8 @@ export default function AdminMenuPage() {
             onChange={(e) => setNewItemPrice(e.target.value)}
           />
 
+          <ImageUploadField value={newItemImageUrl} onChange={setNewItemImageUrl} />
+
           <div className="flex items-center gap-3 pt-1">
             <Toggle
               checked={newItemIsVeg}
@@ -348,6 +410,65 @@ export default function AdminMenuPage() {
               onClick={() => createMutation.mutate()}
             >
               Save item
+            </Button>
+          </div>
+        </div>
+      </Modal>
+
+      {/* Edit Item Modal (Admin Only) */}
+      <Modal
+        isOpen={!!editingItem}
+        onClose={() => setEditingItem(null)}
+        title="Edit Menu Item"
+        description={editingItem ? `Update details for ${editingItem.name}.` : ''}
+      >
+        <div className="space-y-4 mt-2">
+          <Input
+            label="Item Name"
+            value={editName}
+            onChange={(e) => setEditName(e.target.value)}
+          />
+
+          <div>
+            <label className="text-xs font-semibold text-ink-muted uppercase tracking-wider mb-1 block">
+              Description
+            </label>
+            <textarea
+              rows={2}
+              value={editDesc}
+              onChange={(e) => setEditDesc(e.target.value)}
+              className="w-full p-2.5 bg-surface border border-line rounded-sm text-sm text-ink focus:outline-none focus:ring-2 focus:ring-primary-500"
+            />
+          </div>
+
+          <Input
+            label="Price (₹ Rupees)"
+            type="number"
+            min="10"
+            value={editPrice}
+            onChange={(e) => setEditPrice(e.target.value)}
+          />
+
+          <ImageUploadField value={editImageUrl} onChange={setEditImageUrl} />
+
+          <div className="flex items-center gap-3 pt-1">
+            <Toggle
+              checked={editIsVeg}
+              onChange={setEditIsVeg}
+              label={editIsVeg ? 'Vegetarian Item' : 'Non-Vegetarian Item'}
+            />
+          </div>
+
+          <div className="flex items-center justify-end gap-3 pt-3 border-t border-line">
+            <Button variant="secondary" onClick={() => setEditingItem(null)}>
+              Cancel
+            </Button>
+            <Button
+              disabled={!editName.trim() || !editPrice}
+              isLoading={editMutation.isPending}
+              onClick={() => editMutation.mutate()}
+            >
+              Save changes
             </Button>
           </div>
         </div>

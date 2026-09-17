@@ -132,6 +132,7 @@ export const adminApi = {
     name: string;
     description: string;
     price_paise: number;
+    image_url?: string | null;
     is_veg: boolean;
   }): Promise<MenuItem> {
     try {
@@ -147,7 +148,7 @@ export const adminApi = {
           name: data.name,
           description: data.description,
           price_paise: data.price_paise,
-          image_url: '/logo.png',
+          image_url: data.image_url || '/logo.png',
           is_veg: data.is_veg,
           is_available: true,
           is_active: true,
@@ -160,6 +161,15 @@ export const adminApi = {
       }
       throw err;
     }
+  },
+
+  async getImageUploadUrl(
+    contentType: string
+  ): Promise<{ upload_url: string; public_url: string; expires_in: number }> {
+    return await apiFetch('/admin/menu/items/image-upload-url', {
+      method: 'POST',
+      body: JSON.stringify({ content_type: contentType }),
+    });
   },
 
   async softDeleteItem(id: string): Promise<void> {
@@ -193,12 +203,47 @@ export const adminApi = {
     }
   },
 
-  async getSlots(): Promise<DeliverySlot[]> {
+  async getSlots(date?: string): Promise<DeliverySlot[]> {
     try {
-      return await apiFetch<DeliverySlot[]>('/admin/slots');
+      const q = date ? `?date=${date}` : '';
+      return await apiFetch<DeliverySlot[]>(`/admin/slots${q}`);
     } catch (err: any) {
       if (err.code === 'NETWORK_ERROR') {
         return mockDb.slots;
+      }
+      throw err;
+    }
+  },
+
+  async createSlot(data: {
+    location_id: string;
+    slot_date: string;
+    start_time: string;
+    end_time: string;
+    capacity: number;
+    cutoff_minutes: number;
+  }): Promise<DeliverySlot> {
+    try {
+      return await apiFetch<DeliverySlot>('/admin/slots', {
+        method: 'POST',
+        body: JSON.stringify(data),
+      });
+    } catch (err: any) {
+      if (err.code === 'NETWORK_ERROR') {
+        const newSlot: DeliverySlot = {
+          id: `slot-${Date.now()}`,
+          location_id: data.location_id,
+          slot_date: data.slot_date,
+          start_time: data.start_time,
+          end_time: data.end_time,
+          capacity: data.capacity,
+          booked_count: 0,
+          seats_left: data.capacity,
+          is_available: true,
+          unavailable_reason: null,
+        };
+        mockDb.slots.push(newSlot);
+        return newSlot;
       }
       throw err;
     }
